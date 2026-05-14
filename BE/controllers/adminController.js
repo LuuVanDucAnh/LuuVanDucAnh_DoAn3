@@ -640,15 +640,17 @@ async function createFood(req, res, next) {
   try {
     const { tenMon, gia, moTa, hinhAnh, maDanhMuc, maNhaHang, soLuong } = req.body;
 
-    if (!tenMon || !gia || !maDanhMuc || !maNhaHang) {
-      return res.status(400).json({ message: 'Tên món, giá, danh mục và nhà hàng là bắt buộc.' });
+    const nhaHangId = maNhaHang || 1; // Default to 1 if not provided by frontend
+
+    if (!tenMon || !gia || !maDanhMuc) {
+      return res.status(400).json({ message: 'Tên món, giá, danh mục là bắt buộc.' });
     }
     if (parseFloat(gia) <= 0) {
       return res.status(400).json({ message: 'Giá phải lớn hơn 0.' });
     }
 
     const nhaHang = await query('SELECT MaNhaHang FROM NhaHang WHERE MaNhaHang = @id', [
-      { name: 'id', type: 'Int', value: parseInt(maNhaHang) },
+      { name: 'id', type: 'Int', value: parseInt(nhaHangId) },
     ]);
     if (nhaHang.recordset.length === 0) {
       return res.status(404).json({ message: 'Nhà hàng không tồn tại.' });
@@ -663,7 +665,7 @@ async function createFood(req, res, next) {
         { name: 'moTa', type: 'NVarChar', value: moTa || '' },
         { name: 'hinhAnh', type: 'NVarChar', value: hinhAnh || '' },
         { name: 'maDanhMuc', type: 'Int', value: parseInt(maDanhMuc) },
-        { name: 'maNhaHang', type: 'Int', value: parseInt(maNhaHang) },
+        { name: 'maNhaHang', type: 'Int', value: parseInt(nhaHangId) },
         { name: 'soLuong', type: 'Int', value: parseInt(soLuong) || 100 },
       ]
     );

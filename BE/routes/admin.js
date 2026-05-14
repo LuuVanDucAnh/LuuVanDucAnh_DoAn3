@@ -28,14 +28,14 @@ router.delete('/users/:id', authMiddleware(['Admin']), deleteUser);
 router.get('/restaurant', authMiddleware(['Admin']), getRestaurant);
 router.put('/restaurant', authMiddleware(['Admin']), updateRestaurant);
 
-router.get('/categories', authMiddleware(['Admin']), getCategories);
-router.post('/categories', authMiddleware(['Admin']), createCategory);
-router.put('/categories/:id', authMiddleware(['Admin']), updateCategory);
-router.delete('/categories/:id', authMiddleware(['Admin']), deleteCategory);
+router.get('/categories', authMiddleware(['Admin', 'NhanVien']), getCategories);
+router.post('/categories', authMiddleware(['Admin', 'NhanVien']), createCategory);
+router.put('/categories/:id', authMiddleware(['Admin', 'NhanVien']), updateCategory);
+router.delete('/categories/:id', authMiddleware(['Admin', 'NhanVien']), deleteCategory);
 
-router.get('/foods', authMiddleware(['Admin']), getFoodsAdmin);
-router.post('/foods', authMiddleware(['Admin']), createFood);
-router.put('/foods/:id', authMiddleware(['Admin']), updateFood);
-router.delete('/foods/:id', authMiddleware(['Admin']), deleteFood);
+router.get('/foods', authMiddleware(['Admin', 'NhanVien']), getFoodsAdmin);
+router.post('/foods', authMiddleware(['Admin', 'NhanVien']), createFood);
+router.put('/foods/:id', authMiddleware(['Admin', 'NhanVien']), updateFood);
+router.delete('/foods/:id', authMiddleware(['Admin', 'NhanVien']), deleteFood);
 
 module.exports = router;
