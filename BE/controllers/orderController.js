@@ -41,13 +41,18 @@ async function createOrder(req, res, next) {
       let subtotal = 0;
       for (const item of items) {
         const monAn = await transaction.request().query(
-          `SELECT Gia FROM MonAn WHERE MaMonAn = ${parseInt(item.maMonAn)} AND MaNhaHang = ${parseInt(maNhaHang)}`
+          `SELECT Gia, SoLuong FROM MonAn WHERE MaMonAn = ${parseInt(item.maMonAn)} AND MaNhaHang = ${parseInt(maNhaHang)}`
         );
         if (monAn.recordset.length === 0) {
           await transaction.rollback();
           return res.status(404).json({ message: `Món ăn ID ${item.maMonAn} không tồn tại hoặc không thuộc nhà hàng này.` });
         }
-        subtotal += parseFloat(monAn.recordset[0].Gia) * parseInt(item.soLuong);
+        const foodData = monAn.recordset[0];
+        if (foodData.SoLuong !== null && foodData.SoLuong < parseInt(item.soLuong)) {
+          await transaction.rollback();
+          return res.status(400).json({ message: `Món ăn ID ${item.maMonAn} chỉ còn ${foodData.SoLuong} phần, không đủ số lượng bạn đặt.` });
+        }
+        subtotal += parseFloat(foodData.Gia) * parseInt(item.soLuong);
       }
 
       if (subtotal < minOrder) {
@@ -78,6 +83,13 @@ async function createOrder(req, res, next) {
         await transaction.request().query(
           `INSERT INTO ChiTietDonHang (MaDonHang, MaMonAn, SoLuong, DonGia)
            VALUES (${maDonHang}, ${parseInt(item.maMonAn)}, ${parseInt(item.soLuong)}, ${donGia})`
+        );
+
+        // Giảm số lượng trong SQL
+        await transaction.request().query(
+          `UPDATE MonAn 
+           SET SoLuong = SoLuong - ${parseInt(item.soLuong)} 
+           WHERE MaMonAn = ${parseInt(item.maMonAn)} AND SoLuong IS NOT NULL`
         );
       }
 

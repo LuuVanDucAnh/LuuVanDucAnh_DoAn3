@@ -196,7 +196,7 @@ async function validateOrder(req, res, next) {
 
     for (const item of items) {
       const monAn = await query(
-        `SELECT MaMonAn, TenMon, Gia FROM MonAn WHERE MaMonAn = @id AND MaNhaHang = @maNhaHang`,
+        `SELECT MaMonAn, TenMon, Gia, SoLuong FROM MonAn WHERE MaMonAn = @id AND MaNhaHang = @maNhaHang`,
         [
           { name: 'id', type: 'Int', value: parseInt(item.maMonAn) },
           { name: 'maNhaHang', type: 'Int', value: parseInt(maNhaHang) },
@@ -209,6 +209,11 @@ async function validateOrder(req, res, next) {
 
       const food = monAn.recordset[0];
       const soLuong = parseInt(item.soLuong) || 1;
+
+      if (food.SoLuong !== null && food.SoLuong < soLuong) {
+        return res.status(400).json({ message: `Món "${food.TenMon}" chỉ còn ${food.SoLuong} phần, không đủ số lượng bạn đặt.` });
+      }
+
       const thanhTien = parseFloat(food.Gia) * soLuong;
       subtotal += thanhTien;
       validatedItems.push({
